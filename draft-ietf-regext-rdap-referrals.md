@@ -74,7 +74,7 @@ This results in the wasteful expenditure of time, compute resources and
 bandwidth on the part of both the client and server.
 
 This document describes an extension to RDAP that allows clients to request that
-an RDAP server redirect them to the URL of a related resource.
+an RDAP server refer them to the URL of a related resource.
 
 # RDAP Referral Request
 
@@ -82,66 +82,41 @@ To request a referral to a related resource, the client sends an HTTP `GET`
 request to the RDAP server with a path of the form:
 
 ```
-/<object>/referrals0/<relation>/<object value>
+/referrals0/<relation>/<lookup path>
 ```
 
-The client replaces `<object>` with the object type (`domain`, `ip`, `autnum`,
-etc), `<relation>` with the desired relationship type (i.e. `related`), and
-`<object value>` with the applicable object (domain name, IP address, AS number,
-etc).
-
-As an example, a client wishing to be redirected to the `related` resource for
-the domain name `example.com` would send a `GET` request to
-`/domain/referrals0/related/example.com`, while a client wishing to be
-redirected to the parent object of the IP address `192.0.2.42` would send a
-`GET` request to `/ip/referrals0/rdap-up/192.0.2.42`.
-
-The client **MAY** include an `Accept` header field in the request. This value
-may assist the server when there are multiple links with the same relation for
-the object (as described below).
-
-Full example:
+The client replaces `<lookup path>` with the lookup path of the object being sought
+and the `<relation>` with the desired relationship type.
+For example, a referral query for the domain example.com would be:
 
 ```
-GET /domain/referrals0/related/example.com HTTP/2
-Accept: application/rdap+json
+/referrals0/related/domain/example.com
 ```
+
+The referral query for the parent network of `192.0.2.42` would have the following
+full path:
+
+```
+/referrals0/rdap-up/ip/192.0.2.42
+```
+
+Lookup paths for domain names, IP networks, autonomous system numbers, nameservers, and
+entities are described in [@!RFC9082]. Lookups defined by RDAP extensions may also
+use this extension.
+
+Referral requests for searches, where more than one object is returned, as described by
+[@!RFC9083] are not supported. Servers MUST return an HTTP 400 for these requests.
 
 # RDAP Referral Response
 
-If the object specified in the request exists, a single link of the appropriate
-type exists, and the client is authorised to perform the request, the server
-response **MUST** have an HTTP status code of 301 or 302, and include an HTTP
-`Location` header field, whose value contains the URL of the linked resource.
-
-Full example:
-
-```
-HTTP/2 302 
-Location: https://rdap.example.com/rdap/domain/example.com
-```
-
-## Multiple Links
-
-It may be that an RDAP resource has multiple links with the same relation
-and/or type. Since an HTTP response can only contain a single `Location` header
-field, it is not possible for an RDAP server to provide a referral in this
-scenario since it cannot know _which_ link the client wants to follow.
-
-If the HTTP `Accept` header field is present in the request (as described
-above), the server **SHOULD** use its value to improve the granularity of the
-response. For example, an object may have multiple `related` links, but may only
-have one `related` link of type `application/rdap+json`.
-
-If an RDAP server receives a referral request for a resource that has multiple
-links with the same relation and/or type, then the response **MUST** have an
+If the object specified in the request exists, then the response **MUST** have an
 HTTP status code of 300. The response body **MUST** be a minimal RDAP response
 (as described in [@!RFC9083]) for the object in the response, containing only
 the `objectClassName` and `links` properties. The client may then select the
 appropriate link itself, based on the link properties, or present them to the
 user for review.
 
-Full example:
+An example for the query "https://rdap.nic.example/referrals0/related/domain/example.com":
 
 ```
 HTTP/2 300
@@ -155,24 +130,61 @@ Vary: Accept
     {
       "value": "https://rdap.nic.example/domain/example.com",
       "rel": "related",
-      "href": "https://rdap.example.com/rdap/domain/example.com",
-      "type": "application/rdap+json"
-    },
-    {
-      "value": "https://rdap.nic.example/domain/example.com",
-      "rel": "related",
-      "href": "https://rdap.example.com/rdap/domain/example.com",
+      "href": "https://rdap.example.com/domain/example.com",
       "type": "application/rdap+json"
     }
   ]
 }
 ```
 
-Note that the `value` property of the link objects in the response **MUST** be
+In scenarios where an object has multiple related links, a server MAY return all
+links of the requested relation, but the client will most likely only use one of them.
+That is, the client is under no obligation to process more than one link.
+
+Servers MAY include a "self" link as specified by [@!RFC9083] which will enable
+client caching of objects. However, when using a "self" link with this extension,
+the `href` property MUST be the request URI, not the object URI, and clients MUST
+use the `href` property for object caching to prevent cache collisions of full
+objects with these responses.
+
+In all cases, the `value` property of the link objects in the response **MUST** be
 the URI of the object, not the request URI, since the `value` property specifies
 the context URI of the link.
 
-## Cacheability of referral requests
+An example with multiple related links and a self link:
+
+```
+HTTP/2 300
+Content-Type: application/rdap+json
+Access-Control-Allow-Origin: *
+Vary: Accept
+
+{
+  "objectClassName": "domain",
+  "links": [
+    {
+      "value": "https://rdap.nic.example/domain/example.com",
+      "rel": "related",
+      "href": "https://rdap.example.com/domain/example.com",
+      "type": "application/rdap+json"
+    },
+    {
+      "value": "https://rdap.nic.example/domain/example.com",
+      "rel": "related",
+      "href": "https://rdap.example.com/domain/example.com",
+      "type": "application/rdap+json"
+    },
+    {
+      "value": "https://rdap.nic.example/related/domain/example.com",
+      "rel": "self",
+      "href": "https://rdap.nic.example/related/domain/example.com",
+      "type": "application/rdap+json"
+    }
+  ]
+}
+```
+
+## Caching by Intermediaries
 
 To facilitate caching of RDAP resources by intermediary proxies, servers which
 provide a referral based on the value of the `Accept` header field in the
