@@ -82,7 +82,7 @@ To request a referral to a related resource, the client sends an HTTP `GET`
 request to the RDAP server with a path of the form:
 
 ```
-/referrals0/<relation>/<lookup path>
+/referrals0_ref/<relation>/<lookup path>
 ```
 
 The client replaces `<lookup path>` with the lookup path of the object being sought
@@ -90,14 +90,14 @@ and the `<relation>` with the desired relationship type.
 For example, a referral query for the domain example.com would be:
 
 ```
-/referrals0/related/domain/example.com
+/referrals0_ref/related/domain/example.com
 ```
 
 The referral query for the parent network of `192.0.2.42` would have the following
 full path:
 
 ```
-/referrals0/rdap-up/ip/192.0.2.42
+/referrals0_ref/rdap-up/ip/192.0.2.42
 ```
 
 Lookup paths for domain names, IP networks, autonomous system numbers, nameservers, and
@@ -109,79 +109,55 @@ Referral requests for searches, where more than one object is returned, as descr
 
 # RDAP Referral Response
 
-If the object specified in the request exists, then the response **MUST** have an
-HTTP status code of 300. The response body **MUST** be a minimal RDAP response
-(as described in [@!RFC9083]) for the object in the response, containing only
-the `objectClassName` and `links` properties. The client may then select the
-appropriate link itself, based on the link properties, or present them to the
-user for review.
+If the object specified in the request exists, a single link of the appropriate
+type exists, and the client is authorised to perform the request, the server
+response **MUST** have an HTTP status code of 301 or 302, and include an HTTP
+`Location` header field, whose value contains the URL of the linked resource.
 
-An example for the query "https://rdap.nic.example/referrals0/related/domain/example.com":
+When an RDAP server holds in its datastore more than one relationship type for an
+object, a scenario that is possible but not common, only one can be returned
+and is determined by server policy.
 
+The following examples use the HTTP/1.1 message exchange syntax as
+seen in [@!RFC9110].
+
+An example of a referral request from a domain registry to a domain registrar:
 ```
-HTTP/2 300
-Content-Type: application/rdap+json
-Access-Control-Allow-Origin: *
-Vary: Accept
+Client Request:
 
-{
-  "objectClassName": "domain",
-  "links": [
-    {
-      "value": "https://rdap.nic.example/domain/example.com",
-      "rel": "related",
-      "href": "https://rdap.example.com/domain/example.com",
-      "type": "application/rdap+json"
-    }
-  ]
-}
+GET /referrals0_ref/related/domain/example.com HTTP/1.1
+accept: application/rdap+json"
+
+Server Response:
+
+HTTP/1.1 200 OK
+location: https://registrar.example/domain/example.com
 ```
 
-In scenarios where an object has multiple related links, a server MAY return all
-links of the requested relation, but the client will most likely only use one of them.
-That is, the client is under no obligation to process more than one link.
-
-Servers MAY include a "self" link as specified by [@!RFC9083] which will enable
-client caching of objects. However, when using a "self" link with this extension,
-the `href` property MUST be the request URI, not the object URI, and clients MUST
-use the `href` property for object caching to prevent cache collisions of full
-objects with these responses.
-
-In all cases, the `value` property of the link objects in the response **MUST** be
-the URI of the object, not the request URI, since the `value` property specifies
-the context URI of the link.
-
-An example with multiple related links and a self link:
-
+An example of a referral request for a parent IPv4 network:
 ```
-HTTP/2 300
-Content-Type: application/rdap+json
-Access-Control-Allow-Origin: *
-Vary: Accept
+Client Request:
 
-{
-  "objectClassName": "domain",
-  "links": [
-    {
-      "value": "https://rdap.nic.example/domain/example.com",
-      "rel": "related",
-      "href": "https://rdap.example.com/domain/example.com",
-      "type": "application/rdap+json"
-    },
-    {
-      "value": "https://rdap.nic.example/domain/example.com",
-      "rel": "related",
-      "href": "https://rdap.example.com/domain/example.com",
-      "type": "application/rdap+json"
-    },
-    {
-      "value": "https://rdap.nic.example/related/domain/example.com",
-      "rel": "self",
-      "href": "https://rdap.nic.example/related/domain/example.com",
-      "type": "application/rdap+json"
-    }
-  ]
-}
+GET /referrals0_ref/rdap-up/ip/192.0.2.42 HTTP/1.1
+accept: application/rdap+json"
+
+Server Response:
+
+HTTP/1.1 200 OK
+location: https://rir.example/ip/192.0.2.0/24
+```
+
+An example of a referral request for a parent IPv6 network:
+```
+Client Request:
+
+GET /referrals0_ref/rdap-up/ip/2001:db8::1 HTTP/1.1
+accept: application/rdap+json"
+
+Server Response:
+
+HTTP/1.1 200 OK
+location: https://rir.example/ip/2001:db8::/32
 ```
 
 ## Caching by Intermediaries
