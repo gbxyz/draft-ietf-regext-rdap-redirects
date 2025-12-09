@@ -209,8 +209,7 @@ This section is to be removed before publishing as an RFC.
 
 * Describe how the server behaves when multiple links exist.
 
-## Changes from draft-brown-rdap-referrals-02 to
-draft-ietf-regext-rdap-referrals-00
+## Changes from draft-brown-rdap-referrals-02 to draft-ietf-regext-rdap-referrals-00
 
 * Nothing apart from the name.
 
