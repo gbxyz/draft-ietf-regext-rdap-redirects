@@ -8,7 +8,7 @@ consensus = true
 
 [seriesInfo]
 name = "Internet-Draft"
-value = "draft-ietf-regext-rdap-referrals-02"
+value = "draft-ietf-regext-rdap-referrals-03"
 stream = "IETF"
 status = "standard"
 
@@ -119,7 +119,8 @@ and the client is authorised to perform the request, the server response
 **MUST**:
 
 1. have an HTTP status code of 301 (Moved Permanently), 302 (Found), 303 (See
-   Other), or 307 (Temporary Redirect); and
+   Other), 307 (Temporary Redirect) or 308 (Permanent Redirect, see Section
+   15.4.9 of [@!RFC9110]); and
 
 2. include an HTTP `Location` header field, whose value contains the URL of the
    linked resource.
@@ -206,10 +207,11 @@ Note that as per Section 10.2.2 of [!@RFC9110], the URI-reference in `location`
 header fields **MAY** be relative. For relative references, RDAP clients
 **MUST** compute the full URI using the request URI.
 
-# RDAP Conformance
+# RDAP Conformance {#rdapConformance}
 
 Servers which implement this specification **MUST** include the string
-"`referrals0`" in the "`rdapConformance`" array in all RDAP responses.
+"`referrals0`" in the "`rdapConformance`" array in responses to RDAP "help"
+queries.
 
 # IANA Considerations
 
@@ -241,6 +243,14 @@ RDAP clients **SHOULD** detect and intervene in cyclical redirections.
 # Change Log
 
 This section is to be removed before publishing as an RFC.
+
+## Changes from 02 to 03
+
+* Updated (#rdapConformance) to limit the use of the extension identifier to
+  help responses (thanks Jasdip Singh).
+
+* Include 308 in the list of redirection HTTP status codes (thanks Jasdip
+  Singh).
 
 ## Changes from 01 to 02
 
