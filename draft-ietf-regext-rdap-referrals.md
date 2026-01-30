@@ -79,29 +79,29 @@ an RDAP server refer them to the URL of a related resource.
 # RDAP Referral Request
 
 To request a referral to a related resource, the client sends an HTTP `GET`
-request to the RDAP server with a path of the form:
+request with a URL of the form:
 
 ```
-<base path>referrals0_ref/<relation><lookup path>
+<base URL>referrals0_ref/<relation>/<lookup path>
 ```
 
-The client replaces `<base path>` with the path component of the RDAP server's
-base URL (which, as per [@RFC9224], has a trailing `/` character),
-`<lookup path>` with the lookup path of the object being sought, and
-`<relation>` with the desired relationship type.
+The client replaces `<base URL>` with the applicable base URL (which, as per
+[@RFC9224], has a trailing `/` character), `<relation>` with the desired
+relationship type, and `<lookup path>` with the lookup path of the object being
+sought (which, as per [@RFC9082], does not have a leading `/` character).
 
-For example, the path of a referral query for the domain `example.com` sent to
-an RDAP server whose base path is `/` would be:
-
-```
-/referrals0_ref/related/domain/example.com
-```
-
-The referral query for the parent network of `192.0.2.42` would have the
-following full path:
+For example, the URL of a referral query for the domain `example.com`, where the
+base URL for the "`com`" TLD is `https://rdap.example.com/rdap/`, would be:
 
 ```
-/referrals0_ref/rdap-up/ip/192.0.2.42
+https://rdap.example.com/rdap/referrals0_ref/related/domain/example.com
+```
+
+The referral query for the parent network of `192.0.2.42` with the base URL of
+`https://rdap.example.net/` would be:
+
+```
+https://rdap.exampple.net/referrals0_ref/rdap-up/ip/192.0.2.42
 ```
 
 Lookup paths for domain names, IP networks, autonomous system numbers,
@@ -246,11 +246,14 @@ This section is to be removed before publishing as an RFC.
 
 ## Changes from 02 to 03
 
-* Updated (#rdapConformance) to limit the use of the extension identifier to
-  help responses (thanks Jasdip Singh).
+* Correct specification of the referral query path.
 
-* Include 308 in the list of redirection HTTP status codes (thanks Jasdip
-  Singh).
+* Updated (#rdapConformance) to limit the use of the extension identifier to
+  help responses.
+
+* Include 308 in the list of redirection HTTP status codes.
+
+Thanks to Jasdip Singh for identifying these issues.
 
 ## Changes from 01 to 02
 
