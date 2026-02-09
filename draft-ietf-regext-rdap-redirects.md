@@ -8,7 +8,7 @@ consensus = true
 
 [seriesInfo]
 name = "Internet-Draft"
-value = "draft-ietf-regext-rdap-referrals-03"
+value = "draft-ietf-regext-rdap-redirects-00"
 stream = "IETF"
 status = "standard"
 
@@ -303,7 +303,7 @@ RDAP clients **SHOULD** detect and intervene in cyclical redirections.
 
 This section is to be removed before publishing as an RFC.
 
-## Changes from 02 to 03
+## Changes from draft-ietf-regext-rdap-referrals-02 to draft-ietf-regext-rdap-redirects-00
 
 * Consistely refer to "redirect" instead of "referral". This includes changing
   the extension identifier to `redirects0` and the document name.
