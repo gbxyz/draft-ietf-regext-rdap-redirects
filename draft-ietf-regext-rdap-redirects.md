@@ -1,6 +1,6 @@
 %%%
-title = "Efficient RDAP Redirects"
-abbrev = "Efficient RDAP Redirects"
+title = "Explicit RDAP Redirects"
+abbrev = "Explicit RDAP Redirects"
 ipr = "trust200902"
 area = "Internet"
 workgroup = "Registration Protocols Extensions (regext)"
