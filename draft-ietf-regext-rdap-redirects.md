@@ -317,7 +317,7 @@ This section is to be removed before publishing as an RFC.
 
 * Include 308 in the list of redirection HTTP status codes.
 
-Thanks to Jasdip Singh for identifying these issues.
+Thanks to Jasdip Singh for identifying the last three of these issues.
 
 ## Changes from 01 to 02
 
