@@ -1,7 +1,7 @@
-# Efficient RDAP Referrals
+# Explicit RDAP Redirects
 
 This document describes an RDAP extension that allows RDAP clients to request to
-be referred to a related RDAP record for a resource.
+be redirected to a related RDAP record for a resource.
 
 ## Generating the draft
 
@@ -10,7 +10,7 @@ Run `make`. You will need [mmark](https://mmark.miek.nl) and
 
 # Copyright Notice
 
-Copyright (c) 2025 IETF Trust and the persons identified as the document
+Copyright (c) 2026 IETF Trust and the persons identified as the document
 authors. All rights reserved.
 
 This document is subject to BCP 78 and the IETF Trust's Legal Provisions
