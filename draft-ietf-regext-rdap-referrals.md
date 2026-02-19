@@ -203,7 +203,7 @@ Vary: accept, accept-language
 
 ## Client Processing of Redirect Responses
 
-Note that as per Section 10.2.2 of [!@RFC9110], the URI-reference in `location`
+Note that as per Section 10.2.2 of [@!RFC9110], the URI-reference in `location`
 header fields **MAY** be relative. For relative references, RDAP clients
 **MUST** compute the full URI using the request URI.
 
@@ -296,7 +296,7 @@ can exhaust resources on both client and server side.
 To prevent such loops, RDAP servers which receive redirect requests for the
 `self` relation **MUST** respond with a 400 HTTP status.
 
-As described in Section 15.4 of [!@RFC9110], when processing server responses,
+As described in Section 15.4 of [@!RFC9110], when processing server responses,
 RDAP clients **SHOULD** detect and intervene in cyclical redirections.
 
 # Change Log
